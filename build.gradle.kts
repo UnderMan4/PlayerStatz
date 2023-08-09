@@ -1,47 +1,78 @@
+import com.github.gradle.node.npm.task.NpxTask
+import java.io.IOException
+
 plugins {
-    id 'java'
+    id("java")
+    id("com.github.node-gradle.node") version "5.0.0"
 }
 
-group = 'pl.underman.playerstatz'
-version = '0.1'
+group = "pl.underman.playerstatz"
+version = "0.1"
 
 repositories {
     mavenCentral()
     maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
+        setName("papermc-repo")
+        setUrl("https://repo.papermc.io/repository/maven-public/")
     }
     maven {
-        name = "sonatype"
-        url = "https://oss.sonatype.org/content/groups/public/"
+       setName("sonatype")
+        setUrl("https://oss.sonatype.org/content/groups/public/")
     }
 }
 
 dependencies {
-    compileOnly "io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT"
+    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
 }
 
-def targetJavaVersion = 17
+node {
+    download.set(true)
+    nodeProjectDir.set(file("webapp/"))
+}
+
+val targetJavaVersion = 17
 java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    val javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+}
+
+tasks.withType(JavaCompile::class).configureEach {
+    options.apply {
+        encoding = "utf-8"
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        options.release = targetJavaVersion
-    }
+val yarn = tasks.named("yarn") {
+    dependsOn(tasks.npmInstall)
 }
 
-processResources {
-    def props = [version: version]
-    inputs.properties props
-    filteringCharset 'UTF-8'
-    filesMatching('plugin.yml') {
-        expand props
+val buildWebapp = tasks.register<NpxTask>("buildWebapp") {
+    doFirst {
+        if (!file("webapp/dist/").deleteRecursively())
+            throw IOException("Failed to delete build directory!")
+    }
+    
+    command.set("vite")
+    args.set(listOf("build"))
+    dependsOn(yarn)
+    inputs.dir("webapp/")
+    outputs.dir("webapp/dist/")
+}
+
+val zipWebapp = tasks.register<Zip>("zipWebapp") {
+    dependsOn(buildWebapp)
+    from(fileTree("webapp/dist/"))
+    archiveFileName.set("webapp.zip")
+    destinationDirectory.set(file("src/main/resources/"))
+    
+    inputs.dir("webapp/dist/")
+    outputs.file(file("src/main/resources/webapp.zip"))
+}
+
+tasks.processResources {
+    dependsOn(zipWebapp)
+    filesMatching("plugin.yml") {
+        expand("version" to version)
     }
 }
