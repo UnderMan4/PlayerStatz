@@ -1,0 +1,4 @@
+name: PlayerStatz
+version: '${version}'
+main: pl.underman.playerstatz.PlayerStatz
+api-version: '1.20'
