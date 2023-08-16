@@ -7,6 +7,7 @@ import pl.underman.playerstatz.hibernate.Database;
 import pl.underman.playerstatz.listeners.PlayerListener;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 public final class PlayerStatz extends JavaPlugin {
 

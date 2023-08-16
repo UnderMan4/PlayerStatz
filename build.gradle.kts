@@ -27,7 +27,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
 
     // https://mvnrepository.com/artifact/com.h2database/h2
-    implementation("com.h2database:h2:2.2.220")
+    implementation("com.h2database:h2:2.1.210")
 
     // https://mvnrepository.com/artifact/org.hibernate/hibernate-core
     implementation("org.hibernate:hibernate-core:6.2.7.Final")

@@ -4,6 +4,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import pl.underman.playerstatz.PlayerStatz;
+import pl.underman.playerstatz.entities.PlayerActivity;
+import pl.underman.playerstatz.entities.PluginPlayer;
 
 public class Database {
     SessionFactory sessionFactory;
@@ -23,7 +25,9 @@ public class Database {
         configuration.setProperty("hibernate.show_sql", "true");
         configuration.setProperty("hibernate.format_sql", "true");
         configuration.setProperty("hibernate.use_sql_comments", "true");
-        configuration.addPackage("pl.underman.playerstatz.entities");
+//        configuration.addPackage("pl.underman.playerstatz.entities");
+        configuration.addAnnotatedClass(PluginPlayer.class);
+//        configuration.addAnnotatedClass(PlayerActivity.class);
         return configuration;
     }
 
@@ -34,6 +38,7 @@ public class Database {
     public void close() {
         sessionFactory.close();
     }
+
 
     public void persist(Object object) {
         Session session = getSession();
