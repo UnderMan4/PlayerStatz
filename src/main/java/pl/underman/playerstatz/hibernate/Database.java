@@ -1,11 +1,15 @@
 package pl.underman.playerstatz.hibernate;
 
+import jakarta.persistence.criteria.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import pl.underman.playerstatz.PlayerStatz;
-import pl.underman.playerstatz.entities.PlayerActivity;
+import pl.underman.playerstatz.entities.PlayerSession;
 import pl.underman.playerstatz.entities.PluginPlayer;
+import pl.underman.playerstatz.util.Logger;
+
+import java.util.List;
 
 public class Database {
     SessionFactory sessionFactory;
@@ -17,7 +21,10 @@ public class Database {
     public Configuration getConfiguration() {
         Configuration configuration = new Configuration();
         configuration.setProperty("hibernate.connection.driver_class", "org.h2.Driver");
-        configuration.setProperty("hibernate.connection.url", "jdbc:h2:" + PlayerStatz.getInstance().getDataFolder().getAbsolutePath() + "/data/playerstatz");
+        configuration.setProperty(
+                "hibernate.connection.url",
+                "jdbc:h2:" + PlayerStatz.getInstance().getDataFolder().getAbsolutePath() + "/data/playerstatz"
+        );
         configuration.setProperty("hibernate.connection.username", "sa");
         configuration.setProperty("hibernate.connection.password", "");
         configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
@@ -27,7 +34,7 @@ public class Database {
         configuration.setProperty("hibernate.use_sql_comments", "true");
 //        configuration.addPackage("pl.underman.playerstatz.entities");
         configuration.addAnnotatedClass(PluginPlayer.class);
-//        configuration.addAnnotatedClass(PlayerActivity.class);
+        configuration.addAnnotatedClass(PlayerSession.class);
         return configuration;
     }
 
@@ -66,7 +73,7 @@ public class Database {
         session.close();
     }
 
-    public <T> void update(Class<T> clazz, Long id, T object) {
+    public <T> void update(T object) {
         Session session = getSession();
         session.beginTransaction();
         session.merge(object);
@@ -74,14 +81,52 @@ public class Database {
         session.close();
     }
 
-    public <T> T find(Class<T> clazz, String fieldName, Object value) {
-        Session session = getSession();
-        session.beginTransaction();
-        T object = (T) session.createQuery("from " + clazz.getSimpleName() + " where " + fieldName + " = :value")
-                .setParameter("value", value)
-                .uniqueResult();
-        session.getTransaction().commit();
-        session.close();
-        return object;
+    public <T> T findOne(Session session, Class<T> clazz, String fieldName, Object value) {
+        CriteriaBuilder  builder  = session.getCriteriaBuilder();
+        CriteriaQuery<T> criteria = builder.createQuery(clazz);
+        Root<T>          root     = criteria.from(clazz);
+        T                result   = null;
+
+        try {
+            criteria.select(root).where(builder.equal(root.get(fieldName), value));
+            result = session.createQuery(criteria).getSingleResult();
+        } catch (Exception e) {
+            Logger.debug("Database.findOne: " + e.getMessage());
+        }
+        return result;
+    }
+
+    public <T> T findOne(Session session, Class<T> clazz, Criteria... criteriaList) {
+        CriteriaBuilder  builder  = session.getCriteriaBuilder();
+        CriteriaQuery<T> criteria = builder.createQuery(clazz);
+        Root<T>          root     = criteria.from(clazz);
+        T                result   = null;
+
+        try {
+            criteria.select(root);
+            for (Criteria criteria1 : criteriaList) {
+                criteria.where(builder.equal(root.get(criteria1.fieldName()), criteria1.value()));
+            }
+            result = session.createQuery(criteria).getSingleResult();
+        } catch (Exception e) {
+            Logger.debug("Database.findOne: " + e.getMessage());
+        }
+        return result;
+    }
+
+
+    public <T> List<T> find(Session session, Class<T> clazz, String fieldName, Object value) {
+        CriteriaBuilder  builder  = session.getCriteriaBuilder();
+        CriteriaQuery<T> criteria = builder.createQuery(clazz);
+        Root<T>          root     = criteria.from(clazz);
+        List<T>          result   = null;
+
+        try {
+            criteria.select(root).where(builder.equal(root.get(fieldName), value));
+            result = session.createQuery(criteria).getResultList();
+        } catch (Exception e) {
+            Logger.debug("Database.find: " + e.getMessage());
+        }
+        return result;
     }
 }

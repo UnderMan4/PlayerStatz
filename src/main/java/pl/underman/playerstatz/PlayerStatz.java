@@ -5,36 +5,39 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import pl.underman.playerstatz.hibernate.Database;
 import pl.underman.playerstatz.listeners.PlayerListener;
-
-import java.util.List;
-import java.util.logging.Logger;
+import pl.underman.playerstatz.services.PlayerSessionService;
 
 public final class PlayerStatz extends JavaPlugin {
 
     @Getter
-    private static PlayerStatz instance;
+    private static       PlayerStatz instance;
     @Getter
-    private static Database database;
+    private static  Database    database;
 
+    private  PlayerSessionService playerSessionService;
 
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
         instance = this;
         database = new Database();
+        playerSessionService = new PlayerSessionService();
 
         registerListeners(new PlayerListener());
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        endPlayerSessions();
     }
 
     private void registerListeners(Listener... listeners) {
         for (Listener listener : listeners) {
             getServer().getPluginManager().registerEvents(listener, this);
         }
+    }
+
+    private void endPlayerSessions() {
+        playerSessionService.endAllPlayersSessions();
     }
 }

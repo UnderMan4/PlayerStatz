@@ -6,8 +6,14 @@ import java.util.logging.Level;
 
 public class Logger {
 
+    private Logger() {
+    }
+
     public static void info(String message) {
         PlayerStatz.getInstance().getLogger().log(Level.INFO, message);
+    }
+    public static void debug(String message) {
+        PlayerStatz.getInstance().getLogger().log(Level.INFO, "[DEBUG] {0}", message);
     }
 
     public static void warning(String message) {
