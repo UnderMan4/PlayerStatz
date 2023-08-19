@@ -6,13 +6,17 @@ import pl.underman.playerstatz.entities.PlayerSession;
 import pl.underman.playerstatz.entities.PluginPlayer;
 import pl.underman.playerstatz.repositories.PlayerSessionRepository;
 import pl.underman.playerstatz.util.Logger;
+import pl.underman.playerstatz.util.annotations.Autowired;
+import pl.underman.playerstatz.util.annotations.Component;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+@Component
 public class PlayerSessionService {
 
-    private final PlayerSessionRepository playerSessionRepository = new PlayerSessionRepository();
+    @Autowired
+    private PlayerSessionRepository playerSessionRepository;
 
     public void endPlayerSession(Player player) {
         Session session = playerSessionRepository.startSession();

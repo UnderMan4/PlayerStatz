@@ -12,6 +12,7 @@ public class Logger {
     public static void info(String message) {
         PlayerStatz.getInstance().getLogger().log(Level.INFO, message);
     }
+
     public static void debug(String message) {
         PlayerStatz.getInstance().getLogger().log(Level.INFO, "[DEBUG] {0}", message);
     }
@@ -20,7 +21,7 @@ public class Logger {
         PlayerStatz.getInstance().getLogger().log(Level.WARNING, message);
     }
 
-    public static void severe(String message) {
+    public static void error(String message) {
         PlayerStatz.getInstance().getLogger().log(Level.SEVERE, message);
     }
 

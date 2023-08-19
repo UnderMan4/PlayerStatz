@@ -39,6 +39,9 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:1.18.28")
 
 
+    // https://mvnrepository.com/artifact/org.reflections/reflections
+    implementation("org.reflections:reflections:0.10.2")
+
 }
 
 node {

@@ -6,10 +6,12 @@ import jakarta.persistence.criteria.Root;
 import org.hibernate.Session;
 import pl.underman.playerstatz.entities.PlayerSession;
 import pl.underman.playerstatz.util.Logger;
+import pl.underman.playerstatz.util.annotations.Component;
 
 import java.util.List;
 import java.util.UUID;
 
+@Component
 public class PlayerSessionRepository extends BaseRepository<PlayerSession> {
 
 

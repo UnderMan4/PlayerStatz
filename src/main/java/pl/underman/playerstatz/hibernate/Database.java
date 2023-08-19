@@ -1,6 +1,8 @@
 package pl.underman.playerstatz.hibernate;
 
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -8,9 +10,11 @@ import pl.underman.playerstatz.PlayerStatz;
 import pl.underman.playerstatz.entities.PlayerSession;
 import pl.underman.playerstatz.entities.PluginPlayer;
 import pl.underman.playerstatz.util.Logger;
+import pl.underman.playerstatz.util.annotations.Component;
 
 import java.util.List;
 
+@Component
 public class Database {
     SessionFactory sessionFactory;
 

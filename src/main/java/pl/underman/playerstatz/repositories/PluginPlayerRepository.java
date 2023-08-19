@@ -2,9 +2,11 @@ package pl.underman.playerstatz.repositories;
 
 import org.hibernate.Session;
 import pl.underman.playerstatz.entities.PluginPlayer;
+import pl.underman.playerstatz.util.annotations.Component;
 
 import java.util.UUID;
 
+@Component
 public class PluginPlayerRepository extends BaseRepository<PluginPlayer> {
 
 

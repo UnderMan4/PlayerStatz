@@ -16,29 +16,24 @@ import java.util.UUID;
 @ToString
 public class PluginPlayer {
 
-    public PluginPlayer (Player player) {
-        this.uuid = player.getUniqueId();
-        this.username = player.getName();
-        this.lastLogin = LocalDateTime.now();
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     Long id;
-
     @Column(name = "uuid")
     UUID uuid;
-
     @Column(name = "username")
     String username;
-
     @Column(name = "last_login")
     LocalDateTime lastLogin;
-
     @Column(name = "last_logout")
     LocalDateTime lastLogout;
-
     @Column(name = "is_online")
     Boolean isOnline;
+
+    public PluginPlayer(Player player) {
+        this.uuid      = player.getUniqueId();
+        this.username  = player.getName();
+        this.lastLogin = LocalDateTime.now();
+    }
 }

@@ -3,41 +3,47 @@ package pl.underman.playerstatz;
 import lombok.Getter;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import pl.underman.playerstatz.config.ApplicationConfig;
 import pl.underman.playerstatz.hibernate.Database;
-import pl.underman.playerstatz.listeners.PlayerListener;
 import pl.underman.playerstatz.services.PlayerSessionService;
+import pl.underman.playerstatz.util.ApplicationContext;
 
 public final class PlayerStatz extends JavaPlugin {
 
     @Getter
-    private static       PlayerStatz instance;
-    @Getter
-    private static  Database    database;
+    private static PlayerStatz instance;
 
-    private  PlayerSessionService playerSessionService;
+    @Getter
+    private static Database database;
+
+    @Getter
+    private static ApplicationContext applicationContext;
+
+    private PlayerSessionService playerSessionService;
 
 
     @Override
     public void onEnable() {
-        instance = this;
-        database = new Database();
-        playerSessionService = new PlayerSessionService();
+        instance             = this;
+        applicationContext   = new ApplicationContext(ApplicationConfig.class);
+        playerSessionService = applicationContext.getComponentInstance(PlayerSessionService.class);
+        database             = applicationContext.getComponentInstance(Database.class);
 
-        registerListeners(new PlayerListener());
+        registerListeners();
     }
 
     @Override
     public void onDisable() {
-        endPlayerSessions();
+        endPlayersSessions();
     }
 
-    private void registerListeners(Listener... listeners) {
-        for (Listener listener : listeners) {
+    private void registerListeners() {
+        for (Listener listener : applicationContext.getListenerInstances()) {
             getServer().getPluginManager().registerEvents(listener, this);
         }
     }
 
-    private void endPlayerSessions() {
+    private void endPlayersSessions() {
         playerSessionService.endAllPlayersSessions();
     }
 }

@@ -12,14 +12,20 @@ import pl.underman.playerstatz.repositories.PlayerSessionRepository;
 import pl.underman.playerstatz.repositories.PluginPlayerRepository;
 import pl.underman.playerstatz.services.PlayerSessionService;
 import pl.underman.playerstatz.util.Logger;
+import pl.underman.playerstatz.util.annotations.Autowired;
+import pl.underman.playerstatz.util.annotations.EventListener;
 
 import java.time.LocalDateTime;
 
+@EventListener
 public class PlayerListener implements Listener {
 
-    private final PluginPlayerRepository  pluginPlayerRepository  = new PluginPlayerRepository();
-    private final PlayerSessionRepository playerSessionRepository = new PlayerSessionRepository();
-    private final PlayerSessionService    playerSessionService    = new PlayerSessionService();
+    @Autowired
+    private PluginPlayerRepository  pluginPlayerRepository;
+    @Autowired
+    private PlayerSessionRepository playerSessionRepository;
+    @Autowired
+    private PlayerSessionService    playerSessionService;
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
