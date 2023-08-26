@@ -30,4 +30,8 @@ public abstract class BaseRepository<T> {
     public void persist(Session session, T object) {
         session.persist(object);
     }
+    
+    public void delete(T object) {
+        database.delete(object);
+    }
 }

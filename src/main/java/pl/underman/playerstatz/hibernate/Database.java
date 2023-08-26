@@ -82,6 +82,14 @@ public class Database {
         session.getTransaction().commit();
         session.close();
     }
+    
+    public <T> void delete (T object) {
+        Session session = getSession();
+        session.beginTransaction();
+        session.remove(object);
+        session.getTransaction().commit();
+        session.close();
+    }
 
     public <T> void update(T object) {
         Session session = getSession();

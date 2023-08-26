@@ -20,31 +20,28 @@ public class PlayerSessionService {
     @Autowired
     private PlayerSessionRepository playerSessionRepository;
 
+
     public void endPlayerSession(Player player) {
         Session session = playerSessionRepository.startSession();
         session.beginTransaction();
 
-        PlayerSession playerSession = playerSessionRepository.getCurrentPlayerSession(session, player.getUniqueId());
+        PlayerSession playerSession = playerSessionRepository.getCurrentPlayerSession(
+                session,
+                player.getUniqueId()
+        );
 
-        PluginPlayer  pluginPlayer    = playerSession.getPluginPlayer();
-        LocalDateTime sessionStart    = playerSession.getSessionStart();
-        LocalDateTime sessionEnd      = LocalDateTime.now();
-        long          sessionDuration = Duration.between(sessionStart, sessionEnd).toMillis();
+        PluginPlayer  pluginPlayer = playerSession.getPluginPlayer();
+        LocalDateTime sessionStart = playerSession.getSessionStart();
+        LocalDateTime sessionEnd   = LocalDateTime.now();
+        long sessionDuration = Duration.between(sessionStart, sessionEnd)
+                .toMillis();
 
-        int minSessionTime = PlayerStatz.getInstance()
-                .getConfig(PlayerSessionModuleConfig.class)
-                .getMinSessionTime();
-
-        Logger.debug("PlayerSessionService.endPlayerSession: sessionDuration = " + sessionDuration / 1000 + "s");
-        Logger.debug("PlayerSessionService.endPlayerSession: minSessionTime = " + minSessionTime);
-
-        if (sessionDuration / 1000 >= minSessionTime) {
-            playerSession.setSessionEnd(sessionEnd);
-            playerSession.setSessionDuration(sessionDuration);
-            pluginPlayer.setLastLogout(sessionEnd);
-            pluginPlayer.setIsOnline(false);
-            playerSessionRepository.update(playerSession);
-        }
+        checkSessionDuration(
+                sessionEnd,
+                playerSession,
+                pluginPlayer,
+                sessionDuration
+        );
 
         session.getTransaction().commit();
         session.close();
@@ -56,28 +53,54 @@ public class PlayerSessionService {
         session.beginTransaction();
         LocalDateTime sessionEnd = LocalDateTime.now();
 
-        int minSessionTime = PlayerStatz.getInstance()
-                .getConfig(PlayerSessionModuleConfig.class)
-                .getMinSessionTime();
 
-        playerSessionRepository.getCurrentPlayerSession(session).forEach(playerSession -> {
-            PluginPlayer  pluginPlayer    = playerSession.getPluginPlayer();
-            LocalDateTime sessionStart    = playerSession.getSessionStart();
-            long          sessionDuration = Duration.between(sessionStart, sessionEnd).toMillis();
+        playerSessionRepository.getCurrentPlayerSession(session).forEach(
+                playerSession -> {
+                    PluginPlayer  pluginPlayer = playerSession.getPluginPlayer();
+                    LocalDateTime sessionStart = playerSession.getSessionStart();
+                    long sessionDuration = Duration.between(
+                            sessionStart,
+                            sessionEnd
+                    ).toMillis();
 
-            if (sessionDuration / 1000 < minSessionTime) {
-                return;
-            }
+                    checkSessionDuration(
+                            sessionEnd,
+                            playerSession,
+                            pluginPlayer,
+                            sessionDuration
+                    );
+                });
 
+        session.getTransaction().commit();
+        session.close();
+    }
+
+    private void checkSessionDuration(
+            LocalDateTime sessionEnd,
+            PlayerSession playerSession,
+            PluginPlayer pluginPlayer,
+            long sessionDuration
+    ) {
+        int minSessionTime = PlayerStatz.getInstance().getConfig(
+                PlayerSessionModuleConfig.class).getMinSessionTime();
+        long sessionDurationInSeconds = sessionDuration / 1000;
+
+        Logger.debug(
+                "PlayerSessionService.checkSessionDuration: " +
+                        pluginPlayer.getUsername() + " sessionDuration = " +
+                        sessionDurationInSeconds + "s");
+
+        if (sessionDurationInSeconds >= minSessionTime) {
             playerSession.setSessionEnd(sessionEnd);
             playerSession.setSessionDuration(sessionDuration);
             pluginPlayer.setLastLogout(sessionEnd);
             pluginPlayer.setIsOnline(false);
 
             playerSessionRepository.update(playerSession);
-        });
-
-        session.getTransaction().commit();
-        session.close();
+        } else {
+            playerSessionRepository.delete(playerSession);
+        }
     }
+
+
 }
