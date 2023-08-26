@@ -86,9 +86,12 @@ public class PluginConfigurationContext {
         try {
             config = objectMapper.readValue(file, clazz);
             validateConfigValues(clazz, config, file.getAbsolutePath());
+            Logger.debug(file.getAbsolutePath() + " loaded successfully");
         } catch (Exception e) {
+            config = createNewConfigInstance(clazz);
             Logger.error("Could not load configuration file: " + file.getName());
             Logger.error(e.getMessage());
+            Logger.error("Loaded default configuration");
         }
 
         configMap.put(clazz, config);
@@ -98,11 +101,11 @@ public class PluginConfigurationContext {
     private <T> void createFile(Class<T> clazz, File file) {
         T instance = null;
         try {
-            Constructor<T> constructor = clazz.getDeclaredConstructor();
-            instance = constructor.newInstance();
+            instance = createNewConfigInstance(clazz);
             objectMapper.writeValue(file, instance);
+            Logger.debug(file.getAbsolutePath() + " created successfully");
         } catch (Exception e) {
-            Logger.error("Could not generate configuration file: " + file.getName());
+            Logger.error("Could not generate configuration file content: " + file.getName());
             Logger.error(e.getMessage());
         }
         configMap.put(clazz, instance);
@@ -142,6 +145,16 @@ public class PluginConfigurationContext {
                     "Fields " + invalidFields + " in configuration file " + fileName + " should not be empty!"
             );
         }
+    }
+    
+    private <T> T createNewConfigInstance(Class<T> clazz) {
+        try {
+            return clazz.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            Logger.debug("Could not create new instance of class " + clazz.getName());
+            Logger.debug(e.getMessage());
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
