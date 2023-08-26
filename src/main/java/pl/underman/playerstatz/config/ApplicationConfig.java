@@ -1,6 +1,7 @@
 package pl.underman.playerstatz.config;
 
 import pl.underman.playerstatz.util.annotations.ComponentScan;
+import pl.underman.playerstatz.util.annotations.ConfigScan;
 import pl.underman.playerstatz.util.annotations.Configuration;
 
 @Configuration
@@ -11,6 +12,11 @@ import pl.underman.playerstatz.util.annotations.Configuration;
                 "pl.underman.playerstatz.listeners",
                 "pl.underman.playerstatz.commands",
                 "pl.underman.playerstatz.hibernate"
+        }
+)
+@ConfigScan(
+        {
+                "pl.underman.playerstatz.pluginconfig"
         }
 )
 public class ApplicationConfig {

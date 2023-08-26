@@ -9,6 +9,7 @@ import org.hibernate.cfg.Configuration;
 import pl.underman.playerstatz.PlayerStatz;
 import pl.underman.playerstatz.entities.PlayerSession;
 import pl.underman.playerstatz.entities.PluginPlayer;
+import pl.underman.playerstatz.pluginconfig.MainConfig;
 import pl.underman.playerstatz.util.Logger;
 import pl.underman.playerstatz.util.annotations.Component;
 
@@ -33,10 +34,15 @@ public class Database {
         configuration.setProperty("hibernate.connection.password", "");
         configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
         configuration.setProperty("hibernate.hbm2ddl.auto", "update");
-        configuration.setProperty("hibernate.show_sql", "true");
-        configuration.setProperty("hibernate.format_sql", "true");
-        configuration.setProperty("hibernate.use_sql_comments", "true");
-//        configuration.addPackage("pl.underman.playerstatz.entities");
+        configuration.setProperty("hibernate.connection.batch_size", "16");
+        configuration.setProperty("hibernate.connection.pool_size", "8");
+
+        if (Boolean.TRUE.equals(PlayerStatz.getInstance().getConfig(MainConfig.class).isDebugMode())) {
+            configuration.setProperty("hibernate.show_sql", "true");
+            configuration.setProperty("hibernate.format_sql", "true");
+            configuration.setProperty("hibernate.use_sql_comments", "true");
+        }
+
         configuration.addAnnotatedClass(PluginPlayer.class);
         configuration.addAnnotatedClass(PlayerSession.class);
         return configuration;

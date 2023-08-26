@@ -1,20 +1,24 @@
 package pl.underman.playerstatz.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import pl.underman.playerstatz.PlayerStatz;
+import pl.underman.playerstatz.pluginconfig.MainConfig;
 
 import java.util.logging.Level;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Logger {
 
-    private Logger() {
-    }
 
     public static void info(String message) {
         PlayerStatz.getInstance().getLogger().log(Level.INFO, message);
     }
 
     public static void debug(String message) {
-        PlayerStatz.getInstance().getLogger().log(Level.INFO, "[DEBUG] {0}", message);
+        if (Boolean.TRUE.equals(PlayerStatz.getInstance().getConfig(MainConfig.class).isDebugMode())) {
+            PlayerStatz.getInstance().getLogger().log(Level.INFO, "[DEBUG] {0}", message);
+        }
     }
 
     public static void warning(String message) {

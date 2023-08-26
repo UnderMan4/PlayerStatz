@@ -42,6 +42,13 @@ dependencies {
     // https://mvnrepository.com/artifact/org.reflections/reflections
     implementation("org.reflections:reflections:0.10.2")
 
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2")
+
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    implementation("org.apache.logging.log4j:log4j-core:2.20.0")
+
+
+
 }
 
 node {

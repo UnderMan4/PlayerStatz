@@ -1,7 +1,6 @@
 package pl.underman.playerstatz.util;
 
 import org.bukkit.event.Listener;
-import org.reflections.Reflections;
 import pl.underman.playerstatz.util.annotations.EventListener;
 import pl.underman.playerstatz.util.annotations.*;
 
@@ -24,9 +23,22 @@ public class ApplicationContext {
         }
 
         ComponentScan componentScan = clazz.getAnnotation(ComponentScan.class);
+
+        if (componentScan == null) {
+            Logger.debug(
+                    "ApplicationContext.initializeContext: " + clazz.getName() + " has no ComponentScan annotation!");
+            return;
+        }
+
         String[]      packageValues = componentScan.value();
         Set<Class<?>> classes       = new HashSet<>();
-        Arrays.stream(packageValues).forEach(packageValue -> classes.addAll(findClasses(packageValue)));
+        for (String packageValue : packageValues) {
+            classes.addAll(AnnotationHelper.findClassesWithAnnotation(
+                    packageValue,
+                    Component.class,
+                    EventListener.class
+            ));
+        }
         instantiateComponents(classes);
         autowireFields();
     }
@@ -72,21 +84,12 @@ public class ApplicationContext {
                     try {
                         field.set(object, componentsRegistryMap.get(field.getType()));
                     } catch (IllegalAccessException e) {
-                        Logger.debug("ApplicationContext.autowireFields: " + field.getName() + " could not be autowired!");
+                        Logger.debug(
+                                "ApplicationContext.autowireFields: " + field.getName() + " could not be autowired!");
                     }
                 }
             }
         }
-    }
-
-    private Set<Class<?>> findClasses(String packageName) {
-        Reflections   reflections = new Reflections(packageName);
-        Set<Class<?>> result      = new HashSet<>();
-
-        result.addAll(reflections.getTypesAnnotatedWith(Component.class));
-        result.addAll(reflections.getTypesAnnotatedWith(EventListener.class));
-
-        return result;
     }
 
 
@@ -105,6 +108,4 @@ public class ApplicationContext {
         Arrays.setAll(result, i -> listenersRegistryMap.values().toArray()[i]);
         return result;
     }
-
-
 }
