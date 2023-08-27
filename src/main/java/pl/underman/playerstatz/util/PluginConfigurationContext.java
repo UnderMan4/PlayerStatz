@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import lombok.Getter;
 import pl.underman.playerstatz.PlayerStatz;
 import pl.underman.playerstatz.exceptions.ConfigValidationException;
 import pl.underman.playerstatz.util.annotations.ConfigScan;
@@ -19,6 +20,9 @@ import java.util.*;
 
 public class PluginConfigurationContext {
     private final Map<Class<?>, Object> configMap = new HashMap<>();
+
+    @Getter
+    private final Set<String> configFiles = new HashSet<>();
 
     private final ObjectMapper objectMapper;
 
@@ -47,7 +51,10 @@ public class PluginConfigurationContext {
         Set<Class<?>> classes       = new HashSet<>();
 
         for (String packageValue : packageValues) {
-            classes.addAll(AnnotationHelper.findClassesWithAnnotation(packageValue, YamlConfig.class));
+            classes.addAll(AnnotationHelper.findClassesWithAnnotation(
+                    packageValue,
+                    YamlConfig.class
+            ));
         }
 
         loadFiles(classes);
@@ -57,9 +64,11 @@ public class PluginConfigurationContext {
     private void loadFiles(Set<Class<?>> classes) {
         for (Class<?> loadingClass : classes) {
             String fileName = getFileName(loadingClass);
+            configFiles.add(fileName);
 
             File configDirectory = new File(
-                    PlayerStatz.getInstance().getDataFolder().getAbsolutePath() + File.separator + "config");
+                    PlayerStatz.getInstance().getDataFolder().getAbsolutePath() + File.separator +
+                            "config");
 
             if (!configDirectory.exists()) {
                 configDirectory.mkdirs();
@@ -86,7 +95,7 @@ public class PluginConfigurationContext {
         try {
             config = objectMapper.readValue(file, clazz);
             validateConfigValues(clazz, config, file.getAbsolutePath());
-            Logger.debug(file.getAbsolutePath() + " loaded successfully");
+            Logger.info(file.getAbsolutePath() + " loaded successfully");
         } catch (Exception e) {
             config = createNewConfigInstance(clazz);
             Logger.error("Could not load configuration file: " + file.getName());
@@ -103,7 +112,7 @@ public class PluginConfigurationContext {
         try {
             instance = createNewConfigInstance(clazz);
             objectMapper.writeValue(file, instance);
-            Logger.debug(file.getAbsolutePath() + " created successfully");
+            Logger.info(file.getAbsolutePath() + " created successfully");
         } catch (Exception e) {
             Logger.error("Could not generate configuration file content: " + file.getName());
             Logger.error(e.getMessage());
@@ -136,23 +145,25 @@ public class PluginConfigurationContext {
                         invalidFields.add(field.getName());
                     }
                 } catch (IllegalAccessException e) {
-                    Logger.error("Could not access field " + field.getName() + " in class " + clazz.getName());
+                    Logger.error("Could not access field " + field.getName() + " in class " +
+                            clazz.getName());
                 }
             }
         }
         if (!invalidFields.isEmpty()) {
             throw new ConfigValidationException(
-                    "Fields " + invalidFields + " in configuration file " + fileName + " should not be empty!"
+                    "Fields " + invalidFields + " in configuration file " + fileName +
+                            " should not be empty!"
             );
         }
     }
-    
+
     private <T> T createNewConfigInstance(Class<T> clazz) {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            Logger.debug("Could not create new instance of class " + clazz.getName());
-            Logger.debug(e.getMessage());
+            Logger.error("Could not create new instance of class " + clazz.getName());
+            Logger.error(e.getMessage());
         }
         return null;
     }

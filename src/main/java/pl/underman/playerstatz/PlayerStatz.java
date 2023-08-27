@@ -8,7 +8,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import pl.underman.playerstatz.config.ApplicationConfig;
 import pl.underman.playerstatz.hibernate.Database;
 import pl.underman.playerstatz.pluginconfig.MainConfig;
-import pl.underman.playerstatz.services.PlayerSessionService;
+import pl.underman.playerstatz.pluginconfig.TimelineModuleConfig;
+import pl.underman.playerstatz.services.TimelineService;
 import pl.underman.playerstatz.util.ApplicationContext;
 import pl.underman.playerstatz.util.PluginConfigurationContext;
 
@@ -23,7 +24,7 @@ public final class PlayerStatz extends JavaPlugin {
     @Getter
     private static ApplicationContext applicationContext;
 
-    private PlayerSessionService playerSessionService;
+    private TimelineService timelineService;
 
     private PluginConfigurationContext pluginConfigurationContext;
 
@@ -36,9 +37,9 @@ public final class PlayerStatz extends JavaPlugin {
             Configurator.setLevel("org.hibernate", Level.OFF);
             Configurator.setLevel("org.reflections", Level.OFF);
         }
-        applicationContext   = new ApplicationContext(ApplicationConfig.class);
-        playerSessionService = applicationContext.getComponentInstance(PlayerSessionService.class);
-        database             = applicationContext.getComponentInstance(Database.class);
+        applicationContext = new ApplicationContext(ApplicationConfig.class);
+        timelineService    = applicationContext.getComponentInstance(TimelineService.class);
+        database           = applicationContext.getComponentInstance(Database.class);
         registerListeners();
     }
 
@@ -54,7 +55,10 @@ public final class PlayerStatz extends JavaPlugin {
     }
 
     private void endPlayersSessions() {
-        playerSessionService.endAllPlayersSessions();
+        if (pluginConfigurationContext.getConfig(TimelineModuleConfig.class)
+                .isEnablePlayerActivity()) {
+            timelineService.endAllPlayersSessions();
+        }
     }
 
     public <T> T getConfig(Class<T> clazz) {
