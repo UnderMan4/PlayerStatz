@@ -1,10 +1,12 @@
 package pl.underman.playerstatz.listeners;
 
+import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.hibernate.Session;
@@ -35,15 +37,12 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        if (PlayerStatz.getInstance()
-                .getConfig(TimelineModuleConfig.class)
-                .isEnablePlayerActivity()) {
+        if (PlayerStatz.getConfig(TimelineModuleConfig.class).isEnablePlayerActivity()) {
             Logger.debug("PlayerListener.onPlayerJoin");
             Player  player  = e.getPlayer();
             Session session = pluginPlayerRepository.startSession();
             session.beginTransaction();
-            PluginPlayer pluginPlayer = pluginPlayerRepository.getPlayerByUuid(
-                    session,
+            PluginPlayer pluginPlayer = pluginPlayerRepository.getPlayerByUuid(session,
                     player.getUniqueId()
             );
 
@@ -59,11 +58,8 @@ public class PlayerListener implements Listener {
                 pluginPlayerRepository.update(session, pluginPlayer);
             }
 
-            PlayerSession playerSession = PlayerSession.builder()
-                    .isAfk(false)
-                    .sessionStart(LocalDateTime.now())
-                    .pluginPlayer(pluginPlayer)
-                    .build();
+            PlayerSession playerSession = PlayerSession.builder().isAfk(false).sessionStart(
+                    LocalDateTime.now()).pluginPlayer(pluginPlayer).build();
             playerSessionRepository.persist(session, playerSession);
             session.getTransaction().commit();
             session.close();
@@ -72,9 +68,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
-        if (PlayerStatz.getInstance()
-                .getConfig(TimelineModuleConfig.class)
-                .isEnablePlayerActivity()) {
+        if (PlayerStatz.getConfig(TimelineModuleConfig.class).isEnablePlayerActivity()) {
             Logger.debug("PlayerListener.onPlayerQuit");
             timelineService.endPlayerSession(e.getPlayer());
         }
@@ -82,23 +76,22 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
-        if (PlayerStatz.getInstance()
-                .getConfig(TimelineModuleConfig.class)
-                .isEnableDeathTracking()) {
+        if (PlayerStatz.getConfig(TimelineModuleConfig.class).isEnableDeathTracking()) {
             Logger.debug("PlayerListener.onPlayerDeath");
-            
-            Player            player            = e.getPlayer();
-            EntityDamageEvent entityDamageEvent = player.getLastDamageCause();
-            
-            
-            if (entityDamageEvent != null){
-                EntityDamageEvent.DamageCause cause = entityDamageEvent.getCause();
-                Logger.debug("PlayerListener.onPlayerDeath: deathMessage = " + e.getDeathMessage());
-                Logger.debug("PlayerListener.onPlayerDeath: cause = " + cause);
-            }
-            
+            Player player = e.getPlayer();
             timelineService.savePlayerDeath(player, e.getDeathMessage());
         }
+    }
+
+    @EventHandler
+    public void onPlayerAdvancement(PlayerAdvancementDoneEvent e) {
+        if (PlayerStatz.getConfig(TimelineModuleConfig.class).isEnableAchievementTracking()) {
+            Logger.debug("PlayerListener.onPlayerAchievement");
+            Player      player      = e.getPlayer();
+            Advancement advancement = e.getAdvancement();
+            timelineService.savePlayerAdvancement(player, advancement);
+        }
+
     }
 
 }

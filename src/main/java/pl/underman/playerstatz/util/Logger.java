@@ -16,7 +16,7 @@ public class Logger {
     }
 
     public static void debug(String message) {
-        if (Boolean.TRUE.equals(PlayerStatz.getInstance().getConfig(MainConfig.class).isDebugMode())) {
+        if (Boolean.TRUE.equals(PlayerStatz.getConfig(MainConfig.class).isDebugMode())) {
             PlayerStatz.getInstance().getLogger().log(Level.INFO, "[DEBUG] {0}", message);
         }
     }

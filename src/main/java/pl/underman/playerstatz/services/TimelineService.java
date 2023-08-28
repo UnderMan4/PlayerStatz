@@ -2,6 +2,7 @@ package pl.underman.playerstatz.services;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.hibernate.Session;
@@ -37,8 +38,7 @@ public class TimelineService {
         Session session = playerSessionRepository.startSession();
         session.beginTransaction();
 
-        PlayerSession playerSession = playerSessionRepository.getCurrentPlayerSession(
-                session,
+        PlayerSession playerSession = playerSessionRepository.getCurrentPlayerSession(session,
                 player.getUniqueId()
         );
 
@@ -78,9 +78,8 @@ public class TimelineService {
             PluginPlayer pluginPlayer,
             long sessionDuration
     ) {
-        int minSessionTime = PlayerStatz.getInstance()
-                .getConfig(TimelineModuleConfig.class)
-                .getMinSessionTime();
+
+        int minSessionTime = PlayerStatz.getConfig(TimelineModuleConfig.class).getMinSessionTime();
         long sessionDurationInSeconds = sessionDuration / 1000;
 
         Logger.debug("PlayerSessionService.checkSessionDuration: " + pluginPlayer.getUsername() +
@@ -111,8 +110,7 @@ public class TimelineService {
         Session session = playerSessionRepository.startSession();
         session.beginTransaction();
 
-        PluginPlayer pluginPlayer = pluginPlayerService.getPlayerByUuid(
-                session,
+        PluginPlayer pluginPlayer = pluginPlayerService.getPlayerByUuid(session,
                 player.getUniqueId()
         );
 
@@ -123,9 +121,7 @@ public class TimelineService {
         playerDeathBuilder.deathTime(deathTime);
         playerDeathBuilder.pluginPlayer(pluginPlayer);
 
-        if (PlayerStatz.getInstance()
-                .getConfig(TimelineModuleConfig.class)
-                .isSaveDeathLocation()) {
+        if (PlayerStatz.getConfig(TimelineModuleConfig.class).isSaveDeathLocation()) {
             playerDeathBuilder.deathLocationX(location.getX());
             playerDeathBuilder.deathLocationY(location.getY());
             playerDeathBuilder.deathLocationZ(location.getZ());
@@ -142,4 +138,17 @@ public class TimelineService {
     }
 
 
+    public void savePlayerAdvancement(Player player, Advancement advancement) {
+        Session session = playerSessionRepository.startSession();
+        session.beginTransaction();
+
+        PluginPlayer pluginPlayer = pluginPlayerService.getPlayerByUuid(session,
+                player.getUniqueId()
+        );
+        
+        
+
+        session.getTransaction().commit();
+        session.close();
+    }
 }

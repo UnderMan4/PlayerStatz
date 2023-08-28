@@ -61,7 +61,7 @@ public final class PlayerStatz extends JavaPlugin {
         }
     }
 
-    public <T> T getConfig(Class<T> clazz) {
-        return pluginConfigurationContext.getConfig(clazz);
+    public static <T> T getConfig(Class<T> clazz) {
+        return instance.pluginConfigurationContext.getConfig(clazz);
     }
 }
