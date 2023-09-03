@@ -1,19 +1,19 @@
 package pl.underman.playerstatz.services;
 
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.hibernate.Session;
 import pl.underman.playerstatz.PlayerStatz;
+import pl.underman.playerstatz.entities.PlayerAdvancement;
 import pl.underman.playerstatz.entities.PlayerDeath;
 import pl.underman.playerstatz.entities.PlayerSession;
 import pl.underman.playerstatz.entities.PluginPlayer;
 import pl.underman.playerstatz.pluginconfig.TimelineModuleConfig;
 import pl.underman.playerstatz.repositories.PlayerDeathRepository;
-import pl.underman.playerstatz.repositories.PluginPlayerRepository;
 import pl.underman.playerstatz.repositories.PlayerSessionRepository;
+import pl.underman.playerstatz.repositories.PluginPlayerRepository;
 import pl.underman.playerstatz.util.Logger;
 import pl.underman.playerstatz.util.annotations.Autowired;
 import pl.underman.playerstatz.util.annotations.Component;
@@ -38,9 +38,7 @@ public class TimelineService {
         Session session = playerSessionRepository.startSession();
         session.beginTransaction();
 
-        PlayerSession playerSession = playerSessionRepository.getCurrentPlayerSession(session,
-                player.getUniqueId()
-        );
+        PlayerSession playerSession = playerSessionRepository.getCurrentPlayerSession(session, player.getUniqueId());
 
         PluginPlayer  pluginPlayer    = playerSession.getPluginPlayer();
         LocalDateTime sessionStart    = playerSession.getSessionStart();
@@ -73,17 +71,15 @@ public class TimelineService {
     }
 
     private void checkSessionDuration(
-            LocalDateTime sessionEnd,
-            PlayerSession playerSession,
-            PluginPlayer pluginPlayer,
-            long sessionDuration
+            LocalDateTime sessionEnd, PlayerSession playerSession, PluginPlayer pluginPlayer, long sessionDuration
     ) {
 
-        int minSessionTime = PlayerStatz.getConfig(TimelineModuleConfig.class).getMinSessionTime();
+        int  minSessionTime           = PlayerStatz.getConfig(TimelineModuleConfig.class).getMinSessionTime();
         long sessionDurationInSeconds = sessionDuration / 1000;
 
-        Logger.debug("PlayerSessionService.checkSessionDuration: " + pluginPlayer.getUsername() +
-                " sessionDuration = " + sessionDurationInSeconds + "s");
+        Logger.debug(
+                "PlayerSessionService.checkSessionDuration: " + pluginPlayer.getUsername() + " sessionDuration = " +
+                        sessionDurationInSeconds + "s");
 
         if (sessionDurationInSeconds >= minSessionTime) {
             playerSession.setSessionEnd(sessionEnd);
@@ -110,9 +106,7 @@ public class TimelineService {
         Session session = playerSessionRepository.startSession();
         session.beginTransaction();
 
-        PluginPlayer pluginPlayer = pluginPlayerService.getPlayerByUuid(session,
-                player.getUniqueId()
-        );
+        PluginPlayer pluginPlayer = pluginPlayerService.getPlayerByUuid(session, player.getUniqueId());
 
         PlayerDeath.PlayerDeathBuilder playerDeathBuilder = PlayerDeath.builder();
 
@@ -142,11 +136,16 @@ public class TimelineService {
         Session session = playerSessionRepository.startSession();
         session.beginTransaction();
 
-        PluginPlayer pluginPlayer = pluginPlayerService.getPlayerByUuid(session,
-                player.getUniqueId()
-        );
-        
-        
+        PluginPlayer pluginPlayer = pluginPlayerService.getPlayerByUuid(session, player.getUniqueId());
+
+        PlayerAdvancement playerAdvancement = PlayerAdvancement.builder()
+                .pluginPlayer(pluginPlayer)
+                .advancementNamespace(advancement.getKey().getNamespace())
+                .advancementKey(advancement.getKey().getKey())
+                .advancementDate(LocalDateTime.now())
+                .build();
+
+        session.persist(playerAdvancement);
 
         session.getTransaction().commit();
         session.close();

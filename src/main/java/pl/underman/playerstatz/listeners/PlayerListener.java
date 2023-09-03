@@ -4,7 +4,6 @@ import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -42,7 +41,8 @@ public class PlayerListener implements Listener {
             Player  player  = e.getPlayer();
             Session session = pluginPlayerRepository.startSession();
             session.beginTransaction();
-            PluginPlayer pluginPlayer = pluginPlayerRepository.getPlayerByUuid(session,
+            PluginPlayer pluginPlayer = pluginPlayerRepository.getPlayerByUuid(
+                    session,
                     player.getUniqueId()
             );
 
@@ -90,6 +90,7 @@ public class PlayerListener implements Listener {
             Player      player      = e.getPlayer();
             Advancement advancement = e.getAdvancement();
             timelineService.savePlayerAdvancement(player, advancement);
+
         }
 
     }

@@ -6,6 +6,8 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDateTime;
+
 @Entity(name = "player_advancement")
 @Getter
 @Setter
@@ -25,4 +27,13 @@ public class PlayerAdvancement {
     @NotNull
     @Cascade({org.hibernate.annotations.CascadeType.PERSIST, CascadeType.MERGE})
     PluginPlayer pluginPlayer;
+
+    @Column(name = "advancement_namespace")
+    String advancementNamespace;
+
+    @Column(name = "advancement_key")
+    String advancementKey;
+
+    @Column(name = "advancement_date")
+    LocalDateTime advancementDate;
 }
