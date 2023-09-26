@@ -89,7 +89,9 @@ public class PlayerListener implements Listener {
             Logger.debug("PlayerListener.onPlayerAchievement");
             Player      player      = e.getPlayer();
             Advancement advancement = e.getAdvancement();
-            timelineService.savePlayerAdvancement(player, advancement);
+            if (advancement.getDisplay() != null) {
+                timelineService.savePlayerAdvancement(player, advancement);
+            }
 
         }
 

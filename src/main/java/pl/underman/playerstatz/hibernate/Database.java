@@ -7,6 +7,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import pl.underman.playerstatz.PlayerStatz;
+import pl.underman.playerstatz.entities.PlayerAdvancement;
 import pl.underman.playerstatz.entities.PlayerDeath;
 import pl.underman.playerstatz.entities.PlayerSession;
 import pl.underman.playerstatz.entities.PluginPlayer;
@@ -47,6 +48,7 @@ public class Database {
         configuration.addAnnotatedClass(PluginPlayer.class);
         configuration.addAnnotatedClass(PlayerSession.class);
         configuration.addAnnotatedClass(PlayerDeath.class);
+        configuration.addAnnotatedClass(PlayerAdvancement.class);
         return configuration;
     }
 
